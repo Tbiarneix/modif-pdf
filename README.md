@@ -1,102 +1,120 @@
-# Handoff : Éditeur de documents PDF (Publidata)
+# Éditeur de documents PDF — Publidata
 
-## Overview
-Application web d'édition de PDF « type Adobe » pour agents de collectivité (produit **Publidata**, interface **en français**). Elle permet d'importer un document, de le **remplir**, d'**ajouter** du contenu (texte, image, signature, coche, formes, annotations), de **surligner**, **caviarder**, **modifier le texte existant**, gérer les pages, puis **exporter un PDF** — le tout **100 % côté client** (aucun fichier envoyé).
+Éditeur de PDF « type Adobe » pour agents de collectivité, **100 % côté client** :
+aucun fichier n'est envoyé sur un serveur, tout se passe dans le navigateur.
 
-## À propos des fichiers de design
-Le fichier `Editeur PDF.dc.html` de ce dossier est une **référence de design créée en HTML** : un prototype fonctionnel montrant l'apparence et le comportement voulus, **pas du code de production à copier**. La tâche est de **recréer ce design dans une vraie app Next.js** (voir `PROMPT_CLAUDE_CODE.md`) avec des patterns propres (composants, store, types), en réutilisant les mêmes librairies (pdf.js, html2canvas, jsPDF) et en respectant le design system Publidata.
+Importer un PDF (ou une image), le **remplir**, y **ajouter** du contenu (texte,
+image, signature, coche, formes, annotations), **surligner**, **caviarder**,
+**modifier le texte existant**, gérer les pages, puis **exporter un PDF**.
 
-## Fidélité
-**Haute fidélité (hifi).** Couleurs, typographie, espacements, glows et interactions sont définitifs. Recréer l'UI au pixel près avec les tokens ci-dessous.
+## Fonctionnalités
 
----
+- **Import local** — glisser-déposer d'un PDF ou d'une image, ou document d'exemple. Le fichier ne quitte jamais l'appareil.
+- **Édition** — texte libre, champs à remplir, coches, signatures (saisie stylisée ou tracé manuscrit), images/logos, dessin libre, formes (rectangle / ellipse / ligne), surlignage, caviardage.
+- **Modification du texte du PDF** — la couche texte est extraite via pdf.js ; chaque bloc reste transparent tant qu'il n'est pas modifié, puis un cache est peint et le nouveau texte réécrit par-dessus (« Rétablir le texte d'origine » disponible).
+- **Gestion des pages** — ajout, suppression, réorganisation par glisser-déposer.
+- **Aperçu & export** — aperçu en lecture seule, puis export d'un vrai PDF téléchargeable (aplatissement) ou d'un PNG de la première page.
+- **Undo/redo, zoom, raccourcis clavier** (Échap, Suppr, Cmd/Ctrl+Z / +Maj+Z).
 
-## Écrans / Vues
+## Stack
 
-### 1. Import
-- **But** : charger un document. Glisser-déposer un **PDF** ou une **image**, bouton « Parcourir », bouton « Ouvrir un exemple » (charge un document de démo : attestation de domicile municipale).
-- **Layout** : centré verticalement sur fond dégradé `#F3F5F7 → #E6EBEF`. En-tête = pastille bleue 44px (icône `fa-file-pen`) + titre « Éditeur de documents » + sous-titre « Remplir · modifier · signer · exporter ». Zone de dépôt = carte blanche 560px, bordure `2px dashed #BBC7D2`, radius 12px, glow `0 0 30px rgba(44,62,80,.1)`, padding 44px 40px, centrée : icône `fa-cloud-arrow-up` 38px bleue, titre, sous-titre gris, 2 boutons. Sous la carte : 3 mentions avec check vert.
-- **Copie exacte** : « Glissez un PDF ou une image ici » · « Le fichier reste sur votre appareil — rien n'est envoyé. » · boutons « Parcourir » (variant white) et « Ouvrir un exemple » (variant primary). Mentions : « Remplissage de formulaires », « Signature & tampon », « Caviardage & annotations ».
+- [Next.js 16](https://nextjs.org/) (App Router, Turbopack) + React 19 + TypeScript
+- [pdfjs-dist](https://github.com/mozilla/pdf.js) — rendu et extraction de la couche texte
+- [html2canvas](https://html2canvas.hertzen.com/) + [jsPDF](https://github.com/parallax/jsPDF) — aplatissement et génération du PDF de sortie
+- [Zustand](https://github.com/pmndrs/zustand) — store unique de l'éditeur
+- CSS Modules + variables CSS pour les tokens du design system Publidata
+- Font Awesome 6 (icônes) et Dancing Script (signatures)
 
-### 2. Éditeur (écran principal — disposition type Adobe)
-- **Topbar** (hauteur **60px**, fond blanc, glow bas) : pastille logo 30px → nom du fichier (tronqué, 260px max) + tag « Brouillon » (bleu, fond bleu 10%, radius 2px) → boutons undo/redo → *spacer* → sélecteur de page (`‹ 1 / N ›` dans un groupe gris radius 6px) → zoom (`− 82% +`) → bouton « Aperçu » (white) → bouton « Exporter » (primary).
-- **Barre d'outils gauche** (largeur **64px**, fond blanc, bordure droite) : boutons carrés 44px, radius 8px. Actif = fond bleu + icône blanche + glow bleu (le caviardage actif est fond `#1C2527`). Groupes séparés par un filet `#E6EBEF` : `[Sélection]` · `[Texte, Champ, Coche, Signature, Image]` · `[Dessin, Surligner, Forme, Caviarder]`. Sous « Forme » sélectionnée, sous-menu 3 boutons (rectangle/ellipse/ligne). **Tooltip** sombre (`#2C3E50`) à droite au survol, avec petite flèche.
-- **Canvas central** (flex:1, fond `#DCE3E9`, scroll, padding 34px 24px) : la page A4 (**794 px** de large) est centrée, mise à l'échelle via `transform: scale(zoom)`, glow `0 0 30px rgba(44,62,80,.22)`. Deux couches : fond (raster PDF / image / doc démo) + overlay des éléments (absolus).
-- **Panneau droit** (largeur **296px**, fond blanc, bordure gauche, glow) : en-tête 48px (icône + « Propriétés » si sélection, sinon « Document »). Contenu = `PropertiesPanel` ou `DocumentPanel`.
+L'éditeur est un composant client monté via `dynamic(..., { ssr: false })` car il
+dépend de `window`/`document` (pdf.js, html2canvas, jsPDF).
 
-### 3. Panneau propriétés (selon le type sélectionné)
-Badge type en haut (fond bleu, blanc, uppercase). Contrôles réutilisables : lignes libellées (label uppercase 10.5px gris), inputs (h34, bordure `#D4DDE4`, radius 8, glow input), pastilles couleur 24px rondes (sélection = anneau bleu), boutons segmentés, sliders (accent bleu), boutons d'action. Par type :
-- **Texte / Texte du PDF / Champ** : contenu (textarea) ; (champ) libellé si vide ; taille (slider 9–64) ; gras/italique ; alignement L/C/R ; couleur (palette) ; (ptext) « Cache (fond) » = couleur du masque + bouton « Rétablir le texte d'origine ».
-- **Coche** : couleur.
-- **Signature** : mode « Saisir » (nom en police manuscrite Dancing Script) / « Dessiner » (pad canvas + Effacer/Valider).
-- **Image** : « Choisir une image » + opacité.
-- **Surlignage** : couleur (jaune/vert/bleu/rose translucides).
-- **Caviardage** : note explicative.
-- **Forme** : forme rect/ellipse/ligne ; remplissage (avec « aucun ») ; contour ; épaisseur.
-- **Dessin** : couleur ; épaisseur.
-- Communs : Position & taille (X/Y/L/H), Avant/Arrière (ordre), Dupliquer, **Supprimer** (danger).
+## Démarrage
 
-### 4. Panneau Document (aucune sélection)
-Nom du fichier (input) · liste **Pages** (poignée `fa-grip-vertical`, vignette, « Page n », compteur d'éléments hors ptext, suppression) **réorganisables en glisser-déposer** (cible surlignée en bleu) · bouton « Ajouter une page » · si texte PDF détecté : encart bleu « Texte du PDF modifiable » (double-clic pour corriger, n blocs détectés / modifiés) · si doc démo : « Champs détectés » (liste avec statut rempli n/11) · astuce.
+Prérequis : Node.js 18.18+ (recommandé : 20+).
 
-### 5. Aperçu (modale)
-Scrim `rgba(44,62,80,.55)`, barre 58px (icône + « Aperçu — <nom> » + « Exporter » + fermer), pages rendues en lecture seule empilées à l'échelle ~0.62.
+```bash
+npm install      # installe les deps + copie le worker pdf.js dans public/ (postinstall)
+npm run dev      # http://localhost:3000
+```
 
-### 6. Export
-Barre 60px (« Retour à l'édition » + « Exporter le document »). Corps : à gauche aperçu(s) aplati(s) (spinner « Aplatissement du document… » pendant génération) ; à droite carte « Document prêt » avec stats (Champs remplis, Textes modifiés, Éléments ajoutés, Pages) + **Télécharger le PDF** (primary) + **Télécharger en image (PNG)** + note sur le caviardage aplati.
+Autres scripts :
 
----
+```bash
+npm run build    # build de production (Turbopack)
+npm run start    # sert le build de production
+npm run lint     # ESLint (flat config)
+```
 
-## Interactions & comportement
-- **Outils** : `select` (défaut). Clic-pour-placer : `text, field, check, signature, image` (créent un élément par défaut au point cliqué, repassent en select ; texte/champ entrent en édition). Glisser-pour-tracer : `redaction, highlight, shape`. Tracé libre : `draw` (collecte de points → polyline).
-- **Sélection/manip** (outil select) : mousedown sur élément = début déplacement ; 8 poignées de redimensionnement ; clic simple sans déplacement sur `text/field/ptext` = édition inline ; double-clic = édition. Clic dans le vide = désélection.
-- **Coordonnées** : stockées en espace-page non zoomé. Conversion via `rect = overlay.getBoundingClientRect()`, `x = (clientX - rect.left) / zoom`.
-- **Édition inline** : textarea superposée, police/taille/couleur héritées ; ptext = fond opaque (masque) pendant l'édition.
-- **Pages** : ajouter (page blanche), supprimer (min 1, réindexe les `page` des éléments), réorganiser en **drag & drop HTML5** (remap des index d'éléments et de la page active).
-- **Undo/redo** : snapshots JSON de `{ elements, fieldValues }` (pile passé/futur, max ~60). Snapshot avant chaque mutation.
-- **Zoom** 0.3–1.8 (pas 0.1) ; navigation pages ; raccourcis Échap / Suppr / Cmd-Ctrl+Z(+Maj).
-- **Motion** : `all .2s/.3s ease`, pas de rebond. Loader = anneau bleu 3px qui tourne.
+Le worker pdf.js est copié depuis `node_modules` vers `public/pdf.worker.min.js`
+au `postinstall` (voir `scripts/copy-pdf-worker.mjs`) et servi en statique — fiable
+et hors-ligne. Le fichier est régénéré à chaque install ; il n'est pas versionné.
 
-## Import & extraction texte (lib/pdf.ts)
-1. `pdfjs-dist` : configurer `GlobalWorkerOptions.workerSrc`.
-2. Pour chaque page : rendre à scale 2 sur un canvas → `toDataURL('image/jpeg', .85)` = fond raster. Hauteur page = `794 * (vpHeight/vpWidth)`.
-3. Extraire le texte : `viewport scale 1`, facteur `S = 794 / vp1.width`, `vpS = getViewport({scale:S})`, `getTextContent()`. Pour chaque item non vide : `tx = pdfjsLib.Util.transform(vpS.transform, item.transform)` ; `fontH = hypot(tx[1],tx[3])` (ignorer <4 ou >240) ; `left = tx[4]`, `top = tx[5] - fontH` ; `w = max(item.width*S, len*fontH*0.28)`. Créer un élément `ptext { orig, text, x:left, y:top - fontH*0.12, w:w+2, h:fontH*1.28, fontSize:fontH*0.9, serif:/serif|times|.../.test(styles[fontName].fontFamily), bold:/bold|black|.../.test(fontName), color:'#1C2527', mask:'#ffffff' }`.
-4. Image importée : `FileReader` → dataURL, hauteur via ratio naturel.
+## Structure
 
-## Export (lib/export.ts)
-- Rendre chaque page hors-écran à l'échelle 1 (fond + overlays lecture seule), `html2canvas(node, {scale:2, backgroundColor:'#fff'})` → JPEG.
-- Assembler avec jsPDF (`unit:'px'`, format `[794, hauteurPage]`, `addPage` par page), `save('<nom>-modifie.pdf')`. PNG = dataURL page 1.
+```
+app/
+  layout.tsx            # fonts (Font Awesome, Dancing Script), globals
+  page.tsx              # charge <Editor/> en dynamic ssr:false
+  globals.css           # reset + tokens Publidata (variables CSS)
+components/
+  Editor.tsx            # orchestrateur : routing d'écran + raccourcis clavier
+  ImportScreen.tsx      # écran d'import (drag & drop, exemple)
+  Topbar.tsx            # barre du haut (undo/redo, pages, zoom, aperçu, export)
+  ToolRail.tsx          # barre d'outils verticale + tooltips
+  Canvas.tsx            # page mise à l'échelle + couche d'édition (placer/tracer/déplacer/redimensionner)
+  ElementView.tsx       # rendu d'un élément selon son type (+ poignées, édition inline)
+  DemoDocument.tsx      # document d'exemple (attestation) dessiné en HTML/CSS
+  PageBackground.tsx    # fond de page (raster / image / démo) + rendu du brouillon
+  RightPanel.tsx        # panneau droit : Propriétés ou Document
+  PropertiesPanel.tsx   # contrôles selon l'élément sélectionné
+  DocumentPanel.tsx     # pages (drag & drop), champs détectés, texte PDF
+  SignaturePad.tsx      # pad de signature manuscrite
+  PreviewModal.tsx      # aperçu lecture seule
+  ExportScreen.tsx      # aplatissement + stats + téléchargement PDF/PNG
+  ReadOnlyPage.tsx      # rendu d'une page en lecture seule (aperçu/export)
+  ui/                   # primitives du design system (Button, Input, Slider, …)
+lib/
+  types.ts              # modèle de données (union discriminée Element, Page, …)
+  store.ts              # store Zustand : état + actions + historique undo/redo
+  pdf.ts                # import PDF/image + extraction de la couche texte
+  export.ts             # aplatissement html2canvas + assemblage jsPDF
+  geometry.ts           # conversions de coordonnées, redimensionnement
+  tokens.ts             # constantes de design (palettes, PAGE_W, helper rgba)
+scripts/
+  copy-pdf-worker.mjs   # copie le worker pdf.js dans public/ (postinstall)
+docs/
+  ROADMAP.md            # évolutions prévues (pdf-lib, OCR, eIDAS, …)
+```
 
-## État (lib/store.ts)
-`{ screen:'import'|'editor'|'export', docName, pages[], activePage, zoom, tool, shapeKind, elements[], selectedId, editingId, draft, fieldValues, showPreview, exporting, exportPages[], dragPage, dragOverPage }`. Actions : setTool, createClick, startDrag/updateDraft/commitDraft, updateEl, move/resize, select, delete/duplicate, bringFront/sendBack, setField, movePage/addPage/deletePage, zoom, nav, openPreview, goExport, exportGenerate, undo/redo. Op de pointeur en dehors du store (ref) pour la fluidité.
+Les coordonnées des éléments sont stockées en **espace-page non zoomé** (px) ; la
+largeur canonique d'une page est **794 px** (A4 @96dpi), la hauteur dérivant du ratio.
 
----
+## Modèle de données
 
-## Design tokens (Publidata)
-**Couleurs** — bleu primaire `#0075F1` (foncé `#0053B2`, clair `#7DA7D6`) ; gris-bleu `#2C3E50` (titres, tooltips), ramp `#23455F / #BBC7D2 / #E6EBEF / #CCD6DF / #F3F5F7` ; gris `#8E9299` ; bordure `#D4DDE4` ; succès `#22C55E` ; danger `#DC2626` ; warning `#F59E0B` ; info/violet `#8C00F1` ; fonds `#FFFFFF` / `#F3F5F7`, canvas `#DCE3E9` ; texte doc `#1C2527`. Surlignage : `#F7E463 / #8CE9A0 / #9FD0FF / #FFB3C1`.
-**Typo** — Proxima Nova (fallback Helvetica/Arial). UI 15–16px, meta 14px, labels 10.5–12px, tags ≤12px. Titres légers (h1 42/100, h3 32/300, h2 22/500). Poids UI « bold » = **500**. Tracking titres −1px. Signature manuscrite = « Dancing Script ».
-**Radii** — 4px (boutons/cartes), 8px (champs `.form-control`), 2px (tags), 16px (drawer), rond (boutons icônes, pastilles).
-**Ombres (glow, pas directionnelles)** — repos `0 0 30px rgba(44,62,80,.10)` ; hover `.20` ; popover `.30` ; input `0 0 30px rgba(0,0,0,.10)` → focus `0 0 40px rgba(0,0,0,.15)` ; bouton coloré `0 0 20px rgba(hue,.30)` → `.50`. Cartes : lift `translateY(-2px)` au survol.
-**Espacement** — base 4px, unité dominante 16px. Hauteurs de contrôle 24/30/**40**/50/60px.
-**Motion** — `0.3s ease` (interactif), `0.2s` (liens), `0.4s` (topbar).
+Un document est une liste de `Page` (fond `demo` / `image` / `blank`) et une liste
+d'`Element` (union discriminée sur `type` : `text`, `ptext`, `field`, `check`,
+`signature`, `image`, `redaction`, `highlight`, `shape`, `draw`). L'état complet
+(`{ pages, elements, fieldValues, … }`) vit dans le store Zustand, avec un historique
+undo/redo par snapshots.
 
-## Iconographie
-**Font Awesome 6 Free** (CDN) en substitution de FA 7 Pro (le codebase Publidata utilise FA Pro — y brancher le kit licencié en prod). Glyphes utilisés : `fa-arrow-pointer, fa-font, fa-i-cursor, fa-check, fa-signature, fa-image, fa-pen, fa-highlighter, fa-marker, fa-shapes, fa-square/circle/minus, fa-cloud-arrow-up, fa-file-pen, fa-eye, fa-file-arrow-down, fa-rotate-left/right, fa-chevron-left/right, fa-plus/minus, fa-grip-vertical, fa-trash, fa-clone, fa-arrow-up/down, fa-bold, fa-italic, fa-align-*, fa-eraser, fa-upload, fa-file-pdf, fa-wand-magic-sparkles, fa-circle-check`. Cases à cocher du doc = glyphes FA (`far fa-square` / `fas fa-square-check`), pas de contrôles natifs.
+## Export
 
-## Composants du design system à réutiliser
-`Button` (variants primary/white/…, prop `icon`, tailles), `IconButton`, `Input`, `Select`, `Tag`, `Card`, `Toggle`, `Checkbox`, `Alert`, `Loader`, `Tabs`, `Sidebar`. Recréer leur style à partir des tokens ci-dessus (ne pas réinventer d'autres couleurs).
+Chaque page est rendue hors-écran à l'échelle 1 (fond + éléments en lecture seule),
+capturée en image via html2canvas, puis assemblée en PDF au format de chaque page
+avec jsPDF. Le PDF est téléchargé sous le nom `<fichier>-modifie.pdf`. Les zones
+caviardées sont aplaties et non récupérables.
 
-## Assets
-- Icônes : Font Awesome 6 Free (CDN).
-- Police signature : Google Font « Dancing Script ».
-- Aucun asset binaire requis ; le doc de démo est dessiné en HTML/CSS.
-- Logo Publidata et police Proxima Nova : à prendre dans le codebase/DS Publidata pour la prod.
+## Roadmap
 
-## Librairies (versions du prototype)
-- pdf.js `3.11.174` (→ `pdfjs-dist` en npm), worker à configurer.
-- html2canvas `1.4.1`.
-- jsPDF `2.5.1` (`window.jspdf.jsPDF`).
+Voir [docs/ROADMAP.md](docs/ROADMAP.md) : export vectoriel et champs AcroForm
+natifs (pdf-lib), OCR des PDF scannés (tesseract.js), signature électronique eIDAS,
+reflow du texte modifié, persistance locale (IndexedDB) et intégration au dashboard
+Publidata.
 
-## Fichiers de référence
-- `Editeur PDF.dc.html` — le prototype complet (import, éditeur 3 panneaux, propriétés, aperçu, export, extraction/édition du texte PDF). L'ouvrir dans un navigateur pour voir tous les comportements.
-- `PROMPT_CLAUDE_CODE.md` — prompt à coller dans Claude Code pour lancer l'implémentation Next.js.
+## Notes de production
+
+Certains assets sont des placeholders à remplacer par ceux du design system Publidata :
+
+- **Proxima Nova** (police UI) — fallback actuel : Helvetica/Arial.
+- **Font Awesome Pro** — actuellement FA 6 Free via CDN.
+- **Logo Publidata**.
