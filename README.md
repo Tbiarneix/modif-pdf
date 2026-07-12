@@ -1,6 +1,6 @@
 # Éditeur de documents PDF
 
-Éditeur de PDF « type Adobe » pour agents de collectivité, **100 % côté client** :
+Éditeur de PDF « type Adobe », **100 % côté client** :
 aucun fichier n'est envoyé sur un serveur, tout se passe dans le navigateur.
 
 Importer un PDF (ou une image), le **remplir**, y **ajouter** du contenu (texte,
