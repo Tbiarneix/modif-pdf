@@ -1,0 +1,95 @@
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: linear-gradient(180deg, #f3f5f7, #e6ebef);
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--pd-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px 0 rgba(0, 117, 241, 0.3);
+}
+.logo i {
+  color: #fff;
+  font-size: 20px;
+}
+.title {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--pd-ink);
+  letter-spacing: -0.5px;
+}
+.subtitle {
+  font-size: 13px;
+  color: var(--pd-gray);
+}
+.drop {
+  margin-top: 24px;
+  width: 560px;
+  max-width: 90vw;
+  background: #fff;
+  border: 2px dashed var(--pd-slate);
+  border-radius: 12px;
+  padding: 44px 40px;
+  text-align: center;
+  box-shadow: 0 0 30px 0 rgba(44, 62, 80, 0.1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.dropOver {
+  border-color: var(--pd-blue);
+  box-shadow: 0 0 30px 0 rgba(0, 117, 241, 0.25);
+}
+.dropIcon {
+  font-size: 38px;
+  color: var(--pd-blue);
+}
+.dropTitle {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--pd-ink);
+  margin-top: 16px;
+}
+.dropHint {
+  font-size: 13.5px;
+  color: var(--pd-gray);
+  margin-top: 6px;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 22px;
+}
+.mentions {
+  margin-top: 22px;
+  display: flex;
+  gap: 26px;
+  font-size: 12.5px;
+  color: var(--pd-gray);
+}
+.mentions i {
+  color: var(--pd-success);
+  margin-right: 5px;
+}
+.loading {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--pd-ink);
+}

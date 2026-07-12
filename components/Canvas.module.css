@@ -1,0 +1,25 @@
+.canvas {
+  flex: 1;
+  min-width: 0;
+  background: var(--pd-canvas);
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  padding: 34px 24px;
+}
+.pageWrap {
+  flex: none;
+  position: relative;
+}
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  background: #fff;
+  box-shadow: 0 0 30px 0 rgba(44, 62, 80, 0.22);
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+}

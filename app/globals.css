@@ -1,0 +1,114 @@
+/* ============================================================
+   Design system Publidata — tokens en variables CSS.
+   Source : README « Design tokens (Publidata) ».
+   Proxima Nova = police du DS Publidata ; en attendant le kit
+   licencié, fallback Helvetica/Arial.
+   ============================================================ */
+:root {
+  /* Bleu primaire */
+  --pd-blue: #0075f1;
+  --pd-blue-dark: #0053b2;
+  --pd-blue-light: #7da7d6;
+
+  /* Gris-bleu (titres, tooltips) + ramp */
+  --pd-ink: #2c3e50;
+  --pd-ink-2: #23455f;
+  --pd-slate: #bbc7d2;
+  --pd-line: #e6ebef;
+  --pd-slate-2: #ccd6df;
+  --pd-mist: #f3f5f7;
+
+  /* Gris / bordures */
+  --pd-gray: #8e9299;
+  --pd-border: #d4dde4;
+
+  /* Sémantiques */
+  --pd-success: #22c55e;
+  --pd-danger: #dc2626;
+  --pd-warning: #f59e0b;
+  --pd-violet: #8c00f1;
+
+  /* Fonds */
+  --pd-white: #ffffff;
+  --pd-canvas: #dce3e9;
+  --pd-doc-text: #1c2527;
+
+  /* Rayons */
+  --pd-radius-btn: 4px;
+  --pd-radius-field: 8px;
+  --pd-radius-tag: 2px;
+  --pd-radius-drawer: 16px;
+
+  /* Glows (non directionnels) */
+  --pd-glow-rest: 0 0 30px 0 rgba(44, 62, 80, 0.1);
+  --pd-glow-hover: 0 0 30px 0 rgba(44, 62, 80, 0.2);
+  --pd-glow-popover: 0 0 30px 0 rgba(44, 62, 80, 0.3);
+  --pd-glow-input: 0 0 30px 0 rgba(0, 0, 0, 0.06);
+  --pd-glow-input-focus: 0 0 40px 0 rgba(0, 0, 0, 0.15);
+
+  /* Typo */
+  --pd-font: 'ProximaNova', 'Proxima Nova', Helvetica, Arial, sans-serif;
+  --pd-font-hand: 'Dancing Script', cursive;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--pd-font);
+  color: var(--pd-doc-text);
+  background: var(--pd-mist);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--pd-blue);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--pd-blue-dark);
+}
+
+input[type='number']::-webkit-inner-spin-button {
+  opacity: 0.4;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--pd-slate);
+  border-radius: 6px;
+  border: 3px solid var(--pd-line);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes pdfspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pf-spin {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--pd-line);
+  border-top-color: var(--pd-blue);
+  border-radius: 50%;
+  animation: pdfspin 0.7s linear infinite;
+}
+
+/* Focus visible cohérent pour l'accessibilité. */
+:focus-visible {
+  outline: 2px solid var(--pd-blue);
+  outline-offset: 2px;
+}
