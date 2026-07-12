@@ -68,6 +68,12 @@ export interface PTextElement extends ElementBase {
   bold: boolean;
   italic: boolean;
   align: Align;
+  /**
+   * Famille CSS de la police embarquée du PDF (loadedName pdf.js), si résolue.
+   * Quand elle est présente, le texte réécrit s'affiche avec la police réelle
+   * du document ; le gras/italique sont alors portés par la police elle-même.
+   */
+  fontFamily?: string;
 }
 
 export interface FieldElement extends ElementBase {

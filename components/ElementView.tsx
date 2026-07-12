@@ -23,8 +23,13 @@ interface Props {
   cb?: ElementCallbacks;
 }
 
-function serifFamily(serif: boolean) {
-  return serif ? 'Georgia, "Times New Roman", serif' : 'Helvetica, Arial, sans-serif';
+/**
+ * Famille CSS d'un bloc `ptext` : la police embarquée du PDF si pdf.js l'a
+ * chargée (rendu fidèle), avec un fallback serif/sans sinon.
+ */
+function ptextFamily(serif: boolean, family?: string) {
+  const fallback = serif ? 'Georgia, "Times New Roman", serif' : 'Helvetica, Arial, sans-serif';
+  return family ? `"${family}", ${fallback}` : fallback;
 }
 
 function ElementView({ el, selected, editing, readOnly, cb }: Props) {
@@ -86,7 +91,7 @@ function ElementView({ el, selected, editing, readOnly, cb }: Props) {
             alignItems: 'center',
             justifyContent:
               el.align === 'right' ? 'flex-end' : el.align === 'center' ? 'center' : 'flex-start',
-            fontFamily: serifFamily(el.serif),
+            fontFamily: ptextFamily(el.serif, el.fontFamily),
             fontSize: el.fontSize,
             fontWeight: el.bold ? 600 : 400,
             fontStyle: el.italic ? 'italic' : 'normal',
@@ -280,7 +285,7 @@ function ElementView({ el, selected, editing, readOnly, cb }: Props) {
 function InlineEditor({ el, cb }: { el: Element; cb?: ElementCallbacks }) {
   if (el.type !== 'text' && el.type !== 'field' && el.type !== 'ptext') return null;
   const isPtext = el.type === 'ptext';
-  const ff = isPtext ? serifFamily(el.serif) : 'inherit';
+  const ff = el.type === 'ptext' ? ptextFamily(el.serif, el.fontFamily) : 'inherit';
   const bg = isPtext ? el.mask || '#ffffff' : 'rgba(255,255,255,.92)';
   const bold = 'bold' in el ? el.bold : false;
   const italic = 'italic' in el ? el.italic : false;
