@@ -24,12 +24,18 @@ interface Props {
 }
 
 /**
- * Famille CSS d'un bloc `ptext` : la police embarquée du PDF si pdf.js l'a
- * chargée (rendu fidèle), avec un fallback serif/sans sinon.
+ * Pile CSS d'un bloc `ptext` : police embarquée du PDF (si chargée) → clone
+ * métrique embarqué par l'app (Arimo, Tinos, Marianne…) → générique serif/sans.
  */
-function ptextFamily(serif: boolean, family?: string) {
-  const fallback = serif ? 'Georgia, "Times New Roman", serif' : 'Helvetica, Arial, sans-serif';
-  return family ? `"${family}", ${fallback}` : fallback;
+function ptextFamily(serif: boolean, embedded?: string, clone?: string) {
+  const generic = serif ? 'Georgia, "Times New Roman", serif' : 'Helvetica, Arial, sans-serif';
+  return [embedded && `"${embedded}"`, clone && `"${clone}"`, generic].filter(Boolean).join(', ');
+}
+
+/** Valeur CSS text-decoration-line combinant souligné et barré. */
+function decoLine(underline?: boolean, strike?: boolean): string {
+  const parts = [underline && 'underline', strike && 'line-through'].filter(Boolean) as string[];
+  return parts.length ? parts.join(' ') : 'none';
 }
 
 function ElementView({ el, selected, editing, readOnly, cb }: Props) {
@@ -56,8 +62,9 @@ function ElementView({ el, selected, editing, readOnly, cb }: Props) {
           overflow: 'hidden',
           fontSize: el.fontSize,
           color: el.color,
-          fontWeight: el.bold ? 600 : 400,
+          fontWeight: el.weight ?? (el.bold ? 700 : 400),
           fontStyle: el.italic ? 'italic' : 'normal',
+          textDecorationLine: decoLine(el.underline, el.strike),
           textAlign: el.align,
           lineHeight: 1.3,
           whiteSpace: 'pre-wrap',
@@ -91,10 +98,11 @@ function ElementView({ el, selected, editing, readOnly, cb }: Props) {
             alignItems: 'center',
             justifyContent:
               el.align === 'right' ? 'flex-end' : el.align === 'center' ? 'center' : 'flex-start',
-            fontFamily: ptextFamily(el.serif, el.fontFamily),
+            fontFamily: ptextFamily(el.serif, el.fontFamily, el.fallbackFamily),
             fontSize: el.fontSize,
-            fontWeight: el.bold ? 600 : 400,
+            fontWeight: el.weight ?? (el.bold ? 700 : 400),
             fontStyle: el.italic ? 'italic' : 'normal',
+            textDecorationLine: decoLine(el.underline, el.strike),
             lineHeight: 1,
             color: edited ? el.color || '#1C2527' : 'transparent',
             whiteSpace: 'pre',
@@ -285,11 +293,18 @@ function ElementView({ el, selected, editing, readOnly, cb }: Props) {
 function InlineEditor({ el, cb }: { el: Element; cb?: ElementCallbacks }) {
   if (el.type !== 'text' && el.type !== 'field' && el.type !== 'ptext') return null;
   const isPtext = el.type === 'ptext';
-  const ff = el.type === 'ptext' ? ptextFamily(el.serif, el.fontFamily) : 'inherit';
+  const ff = el.type === 'ptext' ? ptextFamily(el.serif, el.fontFamily, el.fallbackFamily) : 'inherit';
   const bg = isPtext ? el.mask || '#ffffff' : 'rgba(255,255,255,.92)';
   const bold = 'bold' in el ? el.bold : false;
+  const weight = 'weight' in el && el.weight != null ? el.weight : bold ? 700 : 400;
   const italic = 'italic' in el ? el.italic : false;
+  const underline = 'underline' in el ? el.underline : false;
+  const strike = 'strike' in el ? el.strike : false;
   const align = 'align' in el ? el.align : 'left';
+  // Une textarea aligne son texte en haut ; pour un ptext (affiché centré
+  // verticalement), on ajoute un padding haut pour centrer la ligne dans la
+  // boîte → pas de saut vers le haut au passage en édition.
+  const padTop = isPtext ? Math.max(0, (el.h - el.fontSize) / 2) : undefined;
   return (
     <textarea
       autoFocus
@@ -305,12 +320,14 @@ function InlineEditor({ el, cb }: { el: Element; cb?: ElementCallbacks }) {
         resize: 'none',
         background: bg,
         padding: el.type === 'field' ? '2px 6px' : 0,
+        paddingTop: padTop,
         margin: 0,
         fontFamily: ff,
         fontSize: el.fontSize,
         color: el.color,
-        fontWeight: bold ? 600 : 400,
+        fontWeight: weight,
         fontStyle: italic ? 'italic' : 'normal',
+        textDecorationLine: decoLine(underline, strike),
         textAlign: align,
         lineHeight: isPtext ? 1 : 1.3,
       }}

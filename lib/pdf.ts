@@ -72,6 +72,39 @@ function sampleBackground(
   return '#' + best.toString(16).padStart(6, '0');
 }
 
+/**
+ * Mappe un nom de police (référencé par le PDF mais non embarqué) vers un clone
+ * métriquement compatible embarqué par l'app. Retourne null si aucun ne convient
+ * (on retombe alors sur le générique serif/sans).
+ */
+function mapStandardFont(label: string): { family: string; serif: boolean } | null {
+  const s = label.toLowerCase();
+  if (/marianne/.test(s)) return { family: 'Marianne', serif: false };
+  if (/calibri|carlito/.test(s)) return { family: 'Carlito', serif: false };
+  if (/cambria|caladea/.test(s)) return { family: 'Caladea', serif: true };
+  if (/georgia|gelasio/.test(s)) return { family: 'Gelasio', serif: true };
+  if (/times|tinos/.test(s)) return { family: 'Tinos', serif: true };
+  if (/courier|mono|cousine/.test(s)) return { family: 'Cousine', serif: false };
+  if (/arial|helvetica|arimo/.test(s)) return { family: 'Arimo', serif: false };
+  if (/sans/.test(s)) return { family: 'Arimo', serif: false };
+  if (/serif/.test(s)) return { family: 'Tinos', serif: true };
+  return null;
+}
+
+/** Déduit une graisse CSS (100–900) du nom de police. Défaut 400. */
+function detectWeight(label: string): number {
+  const s = label.toLowerCase();
+  if (/thin|hairline/.test(s)) return 100;
+  if (/extralight|ultralight/.test(s)) return 200;
+  if (/semibold|demibold|demi/.test(s)) return 600;
+  if (/extrabold|ultrabold/.test(s)) return 800;
+  if (/black|heavy/.test(s)) return 900;
+  if (/bold/.test(s)) return 700;
+  if (/medium/.test(s)) return 500;
+  if (/light/.test(s)) return 300;
+  return 400;
+}
+
 function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.replace('#', ''), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
@@ -188,28 +221,50 @@ export async function loadPdf(file: File): Promise<LoadResult> {
         // L'id d'item seul (« g_d0_f1 ») ne révèle ni le gras ni l'italique.
         let label = `${it.fontName ?? ''} ${style?.fontFamily ?? ''}`;
         // loadedName = famille @font-face installée par pdf.js pour la police
-        // embarquée. Si on la réutilise, le texte réécrit s'affiche avec la
-        // police RÉELLE du PDF (au lieu d'un fallback approximatif).
-        let fontFamily: string | undefined;
+        // embarquée. On ne la réutilise que si elle est RÉELLEMENT chargée
+        // (document.fonts.check) — sinon (police substituée, cas fréquent des
+        // formulaires admin comme la CAF) on passe par un clone embarqué.
+        let loadedName = '';
         try {
           if (it.fontName && pg.commonObjs.has(it.fontName)) {
             const f = pg.commonObjs.get(it.fontName) as { name?: string; loadedName?: string };
             label += ` ${f?.name ?? ''}`;
-            if (f?.loadedName) fontFamily = f.loadedName;
+            loadedName = f?.loadedName ?? '';
           }
         } catch {
           /* police non résolue : on garde le label courant */
         }
-        const serif = /serif|times|roman|georgia|garamond|minion|palatino|book\s?antiqua/i.test(label);
+        let fontFamily: string | undefined;
+        if (loadedName) {
+          try {
+            if (document.fonts?.check(`16px "${loadedName}"`)) fontFamily = loadedName;
+          } catch {
+            /* check indisponible : on considérera la police non chargeable */
+          }
+        }
+        // Police pas réutilisable → clone métrique embarqué (Arimo, Tinos, …).
+        const mapped = fontFamily ? null : mapStandardFont(label);
+        const fallbackFamily = mapped?.family;
+        const serif = mapped
+          ? mapped.serif
+          : /serif|times|roman|georgia|garamond|minion|palatino|book\s?antiqua/i.test(label);
         const boldDetected = /bold|black|heavy|semibold|-b\b|,\s*b\b/i.test(label);
         const italicDetected = /italic|oblique/i.test(label);
         // Avec la police embarquée, le gras/italique sont portés par la police :
-        // ne pas les ré-appliquer en CSS (sinon faux-gras superposé). Sinon
-        // (fallback), on applique le style détecté.
+        // ne pas les ré-appliquer en CSS (sinon faux-gras superposé). Avec un
+        // clone/fallback, on applique le style détecté (les faces Bold/Italic
+        // du clone seront sélectionnées par le navigateur).
         const bold = fontFamily ? false : boldDetected;
         const italic = fontFamily ? false : italicDetected;
+        // Police embarquée : graisse portée par la police → neutre (400).
+        // Sinon : graisse fine déduite du nom (Light/Medium/SemiBold/Black…).
+        const weight = fontFamily ? 400 : detectWeight(label);
 
-        const boxY = top - fontH * 0.12;
+        // Boîte : baseline à `top + fontH`, hauteur 1.28×fontH. Avec le texte
+        // centré verticalement, le centre de la boîte tombe alors ~au centre
+        // visuel de l'original → pas de décalage vers le haut à l'édition.
+        // (l'ancien retrait de 0.12×fontH faisait remonter le texte réécrit).
+        const boxY = top;
         const boxW = Math.max(6, w + 2);
         const boxH = Math.max(9, fontH * 1.28);
         const mask = sampleBackground(
@@ -250,9 +305,11 @@ export async function loadPdf(file: File): Promise<LoadResult> {
           mask,
           serif,
           bold,
+          weight,
           italic,
           align: 'left',
           fontFamily,
+          fallbackFamily,
         });
       }
     } catch (te) {

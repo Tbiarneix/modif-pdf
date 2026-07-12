@@ -1,0 +1,60 @@
+/* ============================================================
+   Polices « clones métriques » embarquées, utilisées pour réécrire le texte
+   des PDF dont la police n'est pas embarquée (cf. lib/pdf.ts › mapStandardFont).
+
+   Déposer les .woff2 correspondants dans public/fonts/ (voir public/fonts/README.md).
+   Tant qu'un fichier manque, la police échoue silencieusement et le rendu
+   retombe sur le générique serif/sans — aucune régression. Une police n'est
+   téléchargée par le navigateur que si un document l'utilise réellement.
+
+   Correspondances :
+     Marianne  → police de l'État (docs CAF, collectivités)
+     Arimo     ↔ Arial / Helvetica          (sans)
+     Tinos     ↔ Times New Roman / Times     (serif)
+     Cousine   ↔ Courier New / Courier       (mono)
+     Carlito   ↔ Calibri                      (sans)
+     Caladea   ↔ Cambria                      (serif)
+     Gelasio   ↔ Georgia                      (serif)
+   ============================================================ */
+
+/* ---- Marianne ---- */
+@font-face { font-family: 'Marianne'; src: url('/fonts/Marianne-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Marianne'; src: url('/fonts/Marianne-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Marianne'; src: url('/fonts/Marianne-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Marianne'; src: url('/fonts/Marianne-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* ---- Arimo (Arial / Helvetica) ---- */
+@font-face { font-family: 'Arimo'; src: url('/fonts/Arimo-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Arimo'; src: url('/fonts/Arimo-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Arimo'; src: url('/fonts/Arimo-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Arimo'; src: url('/fonts/Arimo-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* ---- Tinos (Times New Roman) ---- */
+@font-face { font-family: 'Tinos'; src: url('/fonts/Tinos-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Tinos'; src: url('/fonts/Tinos-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Tinos'; src: url('/fonts/Tinos-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Tinos'; src: url('/fonts/Tinos-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* ---- Cousine (Courier New) ---- */
+@font-face { font-family: 'Cousine'; src: url('/fonts/Cousine-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Cousine'; src: url('/fonts/Cousine-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Cousine'; src: url('/fonts/Cousine-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Cousine'; src: url('/fonts/Cousine-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* ---- Carlito (Calibri) ---- */
+@font-face { font-family: 'Carlito'; src: url('/fonts/Carlito-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Carlito'; src: url('/fonts/Carlito-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Carlito'; src: url('/fonts/Carlito-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Carlito'; src: url('/fonts/Carlito-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* ---- Caladea (Cambria) ---- */
+@font-face { font-family: 'Caladea'; src: url('/fonts/Caladea-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Caladea'; src: url('/fonts/Caladea-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Caladea'; src: url('/fonts/Caladea-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Caladea'; src: url('/fonts/Caladea-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+
+/* ---- Gelasio (Georgia) ---- */
+@font-face { font-family: 'Gelasio'; src: url('/fonts/Gelasio-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Gelasio'; src: url('/fonts/Gelasio-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Gelasio'; src: url('/fonts/Gelasio-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Gelasio'; src: url('/fonts/Gelasio-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }

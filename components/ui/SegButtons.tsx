@@ -10,16 +10,24 @@ export interface SegOption<T extends string> {
 
 interface Props<T extends string> {
   options: SegOption<T>[];
-  current: T | '';
+  /** sélection unique (un seul actif) */
+  current?: T | '';
+  /** mode multi-bascule : chaque bouton actif indépendamment */
+  isActive?: (v: T) => boolean;
   onPick: (v: T) => void;
 }
 
-/** Boutons segmentés (alignement, style, mode…). */
-export default function SegButtons<T extends string>({ options, current, onPick }: Props<T>) {
+/** Boutons segmentés répartis à parts égales (alignement, style, mode…). */
+export default function SegButtons<T extends string>({
+  options,
+  current,
+  isActive,
+  onPick,
+}: Props<T>) {
   return (
     <div className={s.seg}>
       {options.map((o) => {
-        const on = current === o.v;
+        const on = isActive ? isActive(o.v) : current === o.v;
         return (
           <button
             key={o.v}

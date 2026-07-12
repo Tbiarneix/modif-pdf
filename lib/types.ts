@@ -52,7 +52,11 @@ export interface TextElement extends ElementBase {
   fontSize: number;
   color: string;
   bold: boolean;
+  /** graisse CSS (100–900) ; prioritaire sur `bold` si définie */
+  weight?: number;
   italic: boolean;
+  underline?: boolean;
+  strike?: boolean;
   align: Align;
 }
 
@@ -68,14 +72,24 @@ export interface PTextElement extends ElementBase {
   mask: string;
   serif: boolean;
   bold: boolean;
+  /** graisse CSS (100–900) ; prioritaire sur `bold` si définie */
+  weight?: number;
   italic: boolean;
+  underline?: boolean;
+  strike?: boolean;
   align: Align;
   /**
-   * Famille CSS de la police embarquée du PDF (loadedName pdf.js), si résolue.
-   * Quand elle est présente, le texte réécrit s'affiche avec la police réelle
-   * du document ; le gras/italique sont alors portés par la police elle-même.
+   * Famille CSS de la police embarquée du PDF (loadedName pdf.js), si elle est
+   * réellement chargée dans le navigateur. Quand elle est présente, le texte
+   * réécrit s'affiche avec la police réelle ; le gras/italique sont alors portés
+   * par la police elle-même.
    */
   fontFamily?: string;
+  /**
+   * Clone métrique embarqué par l'app (Arimo, Tinos, Marianne…) déduit du nom de
+   * police, utilisé quand la police du PDF n'est pas embarquée/chargeable.
+   */
+  fallbackFamily?: string;
 }
 
 export interface FieldElement extends ElementBase {

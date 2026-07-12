@@ -86,20 +86,52 @@ export default function PropertiesPanel({ el }: { el: Element }) {
             />
           </Row>
           {(el.type === 'text' || el.type === 'ptext') && (
-            <Row label="Style">
-              <div style={{ display: 'flex', gap: 6 }}>
-                <SegButtons
-                  options={[{ v: 'b', i: 'fas fa-bold' }]}
-                  current={el.bold ? 'b' : ''}
-                  onPick={() => up({ bold: !el.bold } as Partial<Element>)}
+            <>
+              <Row label="Graisse">
+                <Slider
+                  value={el.weight ?? (el.bold ? 700 : 400)}
+                  min={100}
+                  max={900}
+                  step={50}
+                  label="Graisse de la police"
+                  display={String(el.weight ?? (el.bold ? 700 : 400))}
+                  onChange={(v) => up({ weight: v } as Partial<Element>)}
                 />
+              </Row>
+              <Row label="Style">
+                {/* Un seul groupe segmenté (4 boutons à parts égales, comme
+                    l'alignement) en mode multi-bascule. Le B pilote la même
+                    valeur `weight` que la tirette : actif si ≥ 600, bascule 400⇄700. */}
                 <SegButtons
-                  options={[{ v: 'i', i: 'fas fa-italic' }]}
-                  current={el.italic ? 'i' : ''}
-                  onPick={() => up({ italic: !el.italic } as Partial<Element>)}
+                  options={[
+                    { v: 'b', i: 'fas fa-bold', t: 'Gras' },
+                    { v: 'i', i: 'fas fa-italic', t: 'Italique' },
+                    { v: 'u', i: 'fas fa-underline', t: 'Souligné' },
+                    { v: 's', i: 'fas fa-strikethrough', t: 'Barré' },
+                  ]}
+                  isActive={(v) =>
+                    v === 'b'
+                      ? (el.weight ?? (el.bold ? 700 : 400)) >= 600
+                      : v === 'i'
+                        ? !!el.italic
+                        : v === 'u'
+                          ? !!el.underline
+                          : !!el.strike
+                  }
+                  onPick={(v) => {
+                    if (v === 'b') {
+                      up({ weight: (el.weight ?? (el.bold ? 700 : 400)) >= 600 ? 400 : 700 } as Partial<Element>);
+                    } else if (v === 'i') {
+                      up({ italic: !el.italic } as Partial<Element>);
+                    } else if (v === 'u') {
+                      up({ underline: !el.underline } as Partial<Element>);
+                    } else {
+                      up({ strike: !el.strike } as Partial<Element>);
+                    }
+                  }}
                 />
-              </div>
-            </Row>
+              </Row>
+            </>
           )}
           {(el.type === 'text' || el.type === 'ptext') && (
             <Row label="Alignement">
