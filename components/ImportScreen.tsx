@@ -35,25 +35,6 @@ export default function ImportScreen() {
 
   return (
     <div className={s.screen}>
-      {/* Marque brimborion (galaxie d'apps) */}
-      <div className={s.hero}>
-        {logoOk ? (
-          // eslint-disable-next-line @next/next/no-img-element -- logo de marque, /public/logo.svg
-          <img
-            className={s.logo}
-            src="/logo.svg"
-            alt="logo brimborion"
-            onError={() => setLogoOk(false)}
-          />
-        ) : null}
-        <div className={s.brandWrap}>
-          <h1 className={`${s.brand} ${s.ghost}`} aria-hidden="true">
-            brimborion
-          </h1>
-          <h1 className={s.brand}>brimborion</h1>
-        </div>
-        <span className={s.tagline}>petit atelier numérique</span>
-      </div>
 
       <div className={s.header}>
         <div className={s.logoBadge}>
@@ -120,6 +101,29 @@ export default function ImportScreen() {
           <i className="fas fa-check" aria-hidden="true" />
           Caviardage &amp; annotations
         </span>
+      </div>
+
+      {/* Marque brimborion (galaxie d'apps) */}
+      <div className={s.hero}>
+        {logoOk ? (
+          // eslint-disable-next-line @next/next/no-img-element -- logo de marque, /public/logo.svg
+          <img
+            className={s.logo}
+            src="/logo.svg"
+            alt="logo brimborion"
+            onError={() => setLogoOk(false)}
+          />
+        ) : null}
+        <div className={s.brandContainer}>
+          <span className={s.hook}>une application par</span>
+          <div className={s.brandWrap}>
+            <h1 className={`${s.brand} ${s.ghost}`} aria-hidden="true">
+              brimborion
+            </h1>
+            <h1 className={s.brand}>brimborion</h1>
+          </div>
+          <span className={s.tagline}>petit atelier numérique</span>
+        </div>
       </div>
     </div>
   );

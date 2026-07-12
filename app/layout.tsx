@@ -3,7 +3,7 @@ import './globals.css';
 import './fonts.css';
 
 export const metadata: Metadata = {
-  title: 'Éditeur de documents — Publidata',
+  title: 'Éditeur de documents',
   description: 'Remplir · modifier · signer · exporter vos PDF, 100 % dans votre navigateur.',
 };
 
