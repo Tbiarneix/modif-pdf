@@ -26,6 +26,52 @@ function uid(): string {
   return 'x' + idSeq.toString(36);
 }
 
+/**
+ * Échantillonne la couleur de fond sous un bloc de texte, dans le raster de la
+ * page (coordonnées en px canvas). On lit quelques points sur les bords haut et
+ * bas de la boîte — là où il y a le padding de ligne, donc du fond et non des
+ * glyphes — et on renvoie la couleur dominante en hex. Sert de cache par défaut
+ * pour que le texte réécrit ne pose pas un rectangle blanc sur un fond coloré.
+ */
+function sampleBackground(
+  data: Uint8ClampedArray,
+  cw: number,
+  ch: number,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): string {
+  const counts = new Map<number, number>();
+  const N = 6;
+  const rows = [Math.floor(y) + 1, Math.floor(y + h) - 1];
+  for (const yy of rows) {
+    if (yy < 0 || yy >= ch) continue;
+    for (let i = 0; i < N; i++) {
+      const xx = Math.floor(x + (w * (i + 0.5)) / N);
+      if (xx < 0 || xx >= cw) continue;
+      const idx = (yy * cw + xx) * 4;
+      if (data[idx + 3] < 200) continue; // ignore le transparent
+      // quantifie par pas de 8 pour regrouper l'anti-aliasing
+      const r = Math.min(255, Math.round(data[idx] / 8) * 8);
+      const g = Math.min(255, Math.round(data[idx + 1] / 8) * 8);
+      const b = Math.min(255, Math.round(data[idx + 2] / 8) * 8);
+      const key = (r << 16) | (g << 8) | b;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+  }
+  let best = -1;
+  let bestN = 0;
+  for (const [key, n] of counts) {
+    if (n > bestN) {
+      bestN = n;
+      best = key;
+    }
+  }
+  if (best < 0) return '#ffffff';
+  return '#' + best.toString(16).padStart(6, '0');
+}
+
 /** Charge un PDF : rasterise chaque page + extrait la couche texte en `ptext`. */
 export async function loadPdf(file: File): Promise<LoadResult> {
   const pdfjs = await getPdfjs();
@@ -52,6 +98,11 @@ export async function loadPdf(file: File): Promise<LoadResult> {
       h: PAGE_W * (vp.height / vp.width),
     });
 
+    // Pixels de la page (une lecture par page) + facteur px-canvas → px-page,
+    // pour échantillonner la couleur de fond sous chaque bloc de texte.
+    const pageImg = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const k = vp.width / PAGE_W;
+
     // --- couche texte → éléments ptext ---
     try {
       const vp1 = pg.getViewport({ scale: 1 });
@@ -76,28 +127,53 @@ export async function loadPdf(file: File): Promise<LoadResult> {
         const style = (tc.styles as Record<string, { fontFamily?: string }> | undefined)?.[
           it.fontName ?? ''
         ];
-        const serif = !!(
-          style &&
-          style.fontFamily &&
-          /serif|times|georgia|roman|garamond/i.test(style.fontFamily)
+        // Label de police le plus riche possible : id de l'item + famille CSS
+        // pdf.js + nom réel de la police chargée (commonObjs, dispo après render).
+        // L'id d'item seul (« g_d0_f1 ») ne révèle ni le gras ni l'italique.
+        let label = `${it.fontName ?? ''} ${style?.fontFamily ?? ''}`;
+        try {
+          if (it.fontName && pg.commonObjs.has(it.fontName)) {
+            const f = pg.commonObjs.get(it.fontName) as { name?: string; loadedName?: string };
+            label += ` ${f?.name ?? f?.loadedName ?? ''}`;
+          }
+        } catch {
+          /* police non résolue : on garde le label courant */
+        }
+        const serif = /serif|times|roman|georgia|garamond|minion|palatino|book\s?antiqua/i.test(label);
+        const bold = /bold|black|heavy|semibold|-b\b|,\s*b\b/i.test(label);
+        const italic = /italic|oblique/i.test(label);
+
+        const boxY = top - fontH * 0.12;
+        const boxW = Math.max(6, w + 2);
+        const boxH = Math.max(9, fontH * 1.28);
+        const mask = sampleBackground(
+          pageImg,
+          canvas.width,
+          canvas.height,
+          left * k,
+          boxY * k,
+          boxW * k,
+          boxH * k,
         );
-        const bold = /bold|black|heavy|semibold/i.test(it.fontName ?? '');
+
         elements.push({
           type: 'ptext',
           id: uid(),
           page: i - 1,
           x: left,
-          y: top - fontH * 0.12,
-          w: Math.max(6, w + 2),
-          h: Math.max(9, fontH * 1.28),
+          y: boxY,
+          w: boxW,
+          h: boxH,
           orig: str,
           text: str,
-          fontSize: Math.max(6, fontH * 0.9),
+          // taille réelle de la police (le facteur 0.9 rapetissait le texte
+          // réécrit par rapport à l'original).
+          fontSize: Math.max(6, fontH),
           color: '#1C2527',
-          mask: '#ffffff',
+          mask,
           serif,
           bold,
-          italic: false,
+          italic,
           align: 'left',
         });
       }
