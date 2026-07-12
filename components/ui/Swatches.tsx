@@ -6,10 +6,25 @@ interface Props {
   onPick: (c: string) => void;
   /** ajoute une pastille « aucun » (transparent) en tête */
   allowNone?: boolean;
+  /** masque la pipette (activée par défaut si le navigateur la supporte) */
+  noEyedropper?: boolean;
 }
 
-/** Sélecteur de couleur en pastilles rondes. */
-export default function Swatches({ colors, current, onPick, allowNone }: Props) {
+/** Sélecteur de couleur en pastilles rondes + pipette (EyeDropper). */
+export default function Swatches({ colors, current, onPick, allowNone, noEyedropper }: Props) {
+  const eyedropperSupported =
+    !noEyedropper && typeof window !== 'undefined' && typeof window.EyeDropper === 'function';
+
+  async function pickWithEyedropper() {
+    if (typeof window === 'undefined' || !window.EyeDropper) return;
+    try {
+      const res = await new window.EyeDropper().open();
+      if (res?.sRGBHex) onPick(res.sRGBHex);
+    } catch {
+      /* sélection annulée (Échap) : rien à faire */
+    }
+  }
+
   return (
     <div className={s.swatches}>
       {allowNone ? (
@@ -36,6 +51,17 @@ export default function Swatches({ colors, current, onPick, allowNone }: Props) 
           onClick={() => onPick(c)}
         />
       ))}
+      {eyedropperSupported ? (
+        <button
+          type="button"
+          className={`${s.swatch} ${s.swatchEye}`}
+          aria-label="Pipette : choisir une couleur à l’écran"
+          title="Pipette"
+          onClick={pickWithEyedropper}
+        >
+          <i className="fas fa-eye-dropper" aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   );
 }

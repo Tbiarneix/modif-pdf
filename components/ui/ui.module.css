@@ -138,6 +138,18 @@
   font-size: 11px;
   background: #fff;
 }
+.swatchEye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: var(--pd-ink);
+  font-size: 11px;
+}
+.swatchEye:hover {
+  border-color: var(--pd-blue);
+  color: var(--pd-blue);
+}
 
 /* ---------- SegButtons ---------- */
 .seg {
