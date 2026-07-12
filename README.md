@@ -1,4 +1,4 @@
-# Éditeur de documents PDF — Publidata
+# Éditeur de documents PDF
 
 Éditeur de PDF « type Adobe » pour agents de collectivité, **100 % côté client** :
 aucun fichier n'est envoyé sur un serveur, tout se passe dans le navigateur.
