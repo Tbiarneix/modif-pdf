@@ -9,19 +9,43 @@ export interface Point {
 }
 
 /**
- * Convertit une position écran (clientX/Y) en coordonnées page non zoomées,
- * relatives au rectangle de la couche overlay.
+ * Convertit une position écran (clientX/Y) en coordonnées page NON pivotées et
+ * non zoomées. `rect` est l'AABB (getBoundingClientRect) de la couche overlay
+ * telle qu'affichée (donc déjà pivotée). La rotation est inversée ici pour que
+ * toute la logique d'édition travaille en espace-page canonique.
  */
 export function pointToPage(
   clientX: number,
   clientY: number,
   rect: DOMRect,
   zoom: number,
+  rotation = 0,
+  W = 0,
+  H = 0,
 ): Point {
-  return {
-    x: (clientX - rect.left) / zoom,
-    y: (clientY - rect.top) / zoom,
-  };
+  const lx = (clientX - rect.left) / zoom;
+  const ly = (clientY - rect.top) / zoom;
+  const rot = ((rotation % 360) + 360) % 360;
+  if (rot === 90) return { x: ly, y: H - lx };
+  if (rot === 180) return { x: W - lx, y: H - ly };
+  if (rot === 270) return { x: W - ly, y: lx };
+  return { x: lx, y: ly };
+}
+
+/**
+ * Dimensions d'affichage d'une page pivotée + transform CSS pour placer la
+ * boîte page (W×H, non pivotée, origine haut-gauche) dans la boîte d'affichage.
+ */
+export function pageDisplay(rotation: number, W: number, H: number) {
+  const rot = ((rotation % 360) + 360) % 360;
+  const swapped = rot === 90 || rot === 270;
+  const dW = swapped ? H : W;
+  const dH = swapped ? W : H;
+  let transform = '';
+  if (rot === 90) transform = `translate(${H}px,0) rotate(90deg)`;
+  else if (rot === 180) transform = `translate(${W}px,${H}px) rotate(180deg)`;
+  else if (rot === 270) transform = `translate(0,${W}px) rotate(270deg)`;
+  return { dW, dH, rot, transform };
 }
 
 export interface Box {

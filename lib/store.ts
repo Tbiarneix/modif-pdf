@@ -91,6 +91,7 @@ export interface EditorState {
 
   addPage: () => void;
   deletePage: (idx: number) => void;
+  rotatePage: (idx: number) => void;
   movePage: (from: number | null, to: number | null) => void;
   setDragPage: (i: number | null) => void;
   setDragOverPage: (i: number | null) => void;
@@ -109,6 +110,7 @@ export interface EditorState {
   setExportPages: (imgs: string[]) => void;
 
   loadResult: (r: LoadResult) => void;
+  appendResult: (r: LoadResult) => void;
   useDemo: () => void;
   reset: () => void;
 }
@@ -338,6 +340,17 @@ export const useEditor = create<EditorState>((set, get) => ({
       };
     });
   },
+  rotatePage: (idx) => {
+    get().commit();
+    set((s) => ({
+      pages: s.pages.map((p, i) =>
+        i === idx
+          ? { ...p, rotation: ((((p.rotation ?? 0) + 90) % 360) as 0 | 90 | 180 | 270) }
+          : p,
+      ),
+      ...historyFlags(),
+    }));
+  },
   movePage: (from, to) => {
     if (from === to || from == null || to == null) return;
     get().commit();
@@ -396,6 +409,25 @@ export const useEditor = create<EditorState>((set, get) => ({
       editingId: null,
       tool: 'select',
       ...historyFlags(),
+    });
+  },
+  appendResult: (r) => {
+    get().commit();
+    set((s) => {
+      const offset = s.pages.length;
+      // Nouvelles pages : ids réattribués (loadPdf produit 'p1','p2'… qui
+      // entreraient en collision avec le document courant).
+      const newPages = r.pages.map((p) => ({ ...p, id: uid() }));
+      // Éléments décalés sur les pages ajoutées, ids réattribués.
+      const newEls = r.elements.map((e) => ({ ...e, id: uid(), page: e.page + offset }));
+      return {
+        pages: [...s.pages, ...newPages],
+        elements: [...s.elements, ...newEls],
+        activePage: offset, // aller à la première page ajoutée
+        selectedId: null,
+        editingId: null,
+        ...historyFlags(),
+      };
     });
   },
   useDemo: () => {

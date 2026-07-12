@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { jsPDF } from 'jspdf';
 import { useEditor, PAGE_W } from '@/lib/store';
 import { flattenPages, buildPdf, downloadPng, outputName } from '@/lib/export';
+import { pageDisplay } from '@/lib/geometry';
 import ElementView from './ElementView';
 import { PageBackground } from './PageBackground';
 import s from './ExportScreen.module.css';
@@ -71,18 +72,32 @@ export default function ExportScreen() {
       <div className={s.capture} aria-hidden="true">
         {pages.map((p, i) => {
           const els = elements.filter((e) => e.page === i);
+          const H = p.h || 1123;
+          const disp = pageDisplay(p.rotation ?? 0, PAGE_W, H);
           return (
             <div
               key={p.id}
               id={`cap-${i}`}
               className={s.captureNode}
-              style={{ width: PAGE_W, height: p.h || 1123 }}
+              style={{ width: disp.dW, height: disp.dH }}
             >
-              <PageBackground page={p} />
-              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                {els.map((el) => (
-                  <ElementView key={el.id} el={el} selected={false} editing={false} readOnly />
-                ))}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: PAGE_W,
+                  height: H,
+                  transformOrigin: 'top left',
+                  transform: disp.transform,
+                }}
+              >
+                <PageBackground page={p} />
+                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                  {els.map((el) => (
+                    <ElementView key={el.id} el={el} selected={false} editing={false} readOnly />
+                  ))}
+                </div>
               </div>
             </div>
           );

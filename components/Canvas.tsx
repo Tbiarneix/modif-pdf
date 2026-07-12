@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useEditor, PAGE_W } from '@/lib/store';
 import { HILITE } from '@/lib/tokens';
-import { pointToPage, boxFromDrag, applyResize } from '@/lib/geometry';
+import { pointToPage, boxFromDrag, applyResize, pageDisplay } from '@/lib/geometry';
 import type { Draft, Element, Handle, ShapeKind, Tool } from '@/lib/types';
 import ElementView, { ElementCallbacks } from './ElementView';
 import { PageBackground, DraftView } from './PageBackground';
@@ -16,6 +16,12 @@ type Op =
   | { mode: 'draw'; rect: DOMRect; page: number };
 
 const CLICK_PLACE: Tool[] = ['text', 'field', 'check', 'signature', 'image'];
+
+/** Args de rotation (rotation, W, H) de la page active, pour pointToPage. */
+function pageRot(st: ReturnType<typeof useEditor.getState>): [number, number, number] {
+  const pg = st.pages[st.activePage];
+  return [pg?.rotation ?? 0, PAGE_W, pg?.h ?? 1123];
+}
 
 function newDraft(tool: Tool, shapeKind: ShapeKind, x: number, y: number, page: number): Draft {
   if (tool === 'redaction') return { type: 'redaction', page, x, y, w: 1, h: 1 };
@@ -77,7 +83,7 @@ export default function Canvas() {
     function toPage(e: MouseEvent) {
       const op = opRef.current;
       const st = useEditor.getState();
-      return pointToPage(e.clientX, e.clientY, op!.rect, st.zoom);
+      return pointToPage(e.clientX, e.clientY, op!.rect, st.zoom, ...pageRot(st));
     }
     function onMove(e: MouseEvent) {
       const op = opRef.current;
@@ -132,7 +138,7 @@ export default function Canvas() {
     const st = useEditor.getState();
     const t = st.tool;
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const { x, y } = pointToPage(e.clientX, e.clientY, rect, st.zoom);
+    const { x, y } = pointToPage(e.clientX, e.clientY, rect, st.zoom, ...pageRot(st));
     if (t === 'select') {
       st.select(null);
       return;
@@ -164,7 +170,7 @@ export default function Canvas() {
       const layer = (e.currentTarget as HTMLElement).closest('[data-overlay]');
       if (!layer) return;
       const rect = layer.getBoundingClientRect();
-      const { x, y } = pointToPage(e.clientX, e.clientY, rect, st.zoom);
+      const { x, y } = pointToPage(e.clientX, e.clientY, rect, st.zoom, ...pageRot(st));
       opRef.current = {
         mode: 'move',
         id: el.id,
@@ -186,7 +192,7 @@ export default function Canvas() {
       const layer = (e.currentTarget as HTMLElement).closest('[data-overlay]');
       if (!layer) return;
       const rect = layer.getBoundingClientRect();
-      const { x, y } = pointToPage(e.clientX, e.clientY, rect, st.zoom);
+      const { x, y } = pointToPage(e.clientX, e.clientY, rect, st.zoom, ...pageRot(st));
       opRef.current = {
         mode: 'resize',
         id: el.id,
@@ -212,6 +218,7 @@ export default function Canvas() {
 
   const W = PAGE_W;
   const H = page.h || 1123;
+  const disp = pageDisplay(page.rotation ?? 0, W, H);
   const creating = tool !== 'select';
   const pageEls = elements.filter((e) => e.page === activePage);
 
@@ -222,8 +229,11 @@ export default function Canvas() {
         if (e.target === e.currentTarget && tool === 'select') useEditor.getState().select(null);
       }}
     >
-      <div className={s.pageWrap} style={{ width: W * zoom, height: H * zoom }}>
-        <div className={s.page} style={{ width: W, height: H, transform: `scale(${zoom})` }}>
+      <div className={s.pageWrap} style={{ width: disp.dW * zoom, height: disp.dH * zoom }}>
+        <div
+          className={s.page}
+          style={{ width: W, height: H, transform: `scale(${zoom}) ${disp.transform}` }}
+        >
           <PageBackground page={page} />
           <div
             data-overlay

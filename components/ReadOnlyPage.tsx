@@ -2,6 +2,7 @@
 
 import { useEditor, PAGE_W } from '@/lib/store';
 import type { Page } from '@/lib/types';
+import { pageDisplay } from '@/lib/geometry';
 import ElementView from './ElementView';
 import { PageBackground } from './PageBackground';
 
@@ -18,9 +19,10 @@ export default function ReadOnlyPage({
   const elements = useEditor((st) => st.elements);
   const W = PAGE_W;
   const H = page.h || 1123;
+  const disp = pageDisplay(page.rotation ?? 0, W, H);
   const els = elements.filter((e) => e.page === index);
   return (
-    <div style={{ width: W * scale, height: H * scale, flex: 'none', position: 'relative' }}>
+    <div style={{ width: disp.dW * scale, height: disp.dH * scale, flex: 'none', position: 'relative' }}>
       <div
         style={{
           position: 'absolute',
@@ -29,7 +31,7 @@ export default function ReadOnlyPage({
           width: W,
           height: H,
           transformOrigin: 'top left',
-          transform: `scale(${scale})`,
+          transform: `scale(${scale}) ${disp.transform}`,
           background: '#fff',
           boxShadow: '0 0 24px 0 rgba(44,62,80,.2)',
         }}

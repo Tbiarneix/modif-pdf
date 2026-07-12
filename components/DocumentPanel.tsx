@@ -1,6 +1,8 @@
 'use client';
 
+import { useRef, useState } from 'react';
 import { useEditor } from '@/lib/store';
+import { loadPdf } from '@/lib/pdf';
 import { ACCENT, rgba } from '@/lib/tokens';
 import { Row, Input, SectionLabel } from './ui/Field';
 import ActionButton from './ui/ActionButton';
@@ -9,6 +11,26 @@ import s from './Panel.module.css';
 
 export default function DocumentPanel() {
   const st = useEditor();
+  const mergeInput = useRef<HTMLInputElement>(null);
+  const [merging, setMerging] = useState(false);
+
+  async function mergePdf(files: FileList | null) {
+    const f = files && files[0];
+    if (!f) return;
+    if (f.type !== 'application/pdf') {
+      alert('Choisissez un fichier PDF.');
+      return;
+    }
+    setMerging(true);
+    try {
+      st.appendResult(await loadPdf(f));
+    } catch (err) {
+      console.warn(err);
+      alert('Impossible de lire ce PDF.');
+    } finally {
+      setMerging(false);
+    }
+  }
   const {
     docName,
     pages,
@@ -120,6 +142,17 @@ export default function DocumentPanel() {
                 </div>
                 <div className={s.pageCount}>{count} élément(s)</div>
               </div>
+              <button
+                className={s.pageDel}
+                aria-label={`Pivoter la page ${i + 1}`}
+                title="Pivoter 90°"
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  st.rotatePage(i);
+                }}
+              >
+                <i className="fas fa-rotate-right" aria-hidden="true" />
+              </button>
               {multi ? (
                 <button
                   className={s.pageDel}
@@ -138,8 +171,23 @@ export default function DocumentPanel() {
         })}
       </div>
 
-      <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
         <ActionButton label="Ajouter une page" icon="fas fa-plus" onClick={st.addPage} />
+        <ActionButton
+          label={merging ? 'Lecture…' : 'Ajouter un PDF'}
+          icon={merging ? 'fas fa-spinner fa-spin' : 'fas fa-file-circle-plus'}
+          onClick={() => !merging && mergeInput.current?.click()}
+        />
+        <input
+          ref={mergeInput}
+          type="file"
+          accept="application/pdf"
+          hidden
+          onChange={(e) => {
+            void mergePdf(e.target.files);
+            e.target.value = '';
+          }}
+        />
       </div>
 
       {hasDemo ? (

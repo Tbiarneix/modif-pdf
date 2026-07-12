@@ -31,6 +31,8 @@ export interface Page {
   src?: string;
   /** hauteur de page en px (espace non zoomé) */
   h: number;
+  /** rotation d'affichage, multiple de 90° (défaut 0) */
+  rotation?: 0 | 90 | 180 | 270;
 }
 
 /** Champs communs à tous les éléments. */

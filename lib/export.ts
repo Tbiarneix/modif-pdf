@@ -6,6 +6,7 @@
    ============================================================ */
 import type { Page } from './types';
 import { PAGE_W } from './types';
+import { pageDisplay } from './geometry';
 
 /**
  * Capture chaque page (nœuds `#cap-<i>` déjà montés hors-écran à l'échelle 1)
@@ -35,16 +36,17 @@ export async function flattenPages(pageCount: number): Promise<string[]> {
 /** Assemble les images aplaties en un PDF au format de chaque page. */
 export async function buildPdf(imgs: string[], pages: Page[]) {
   const { jsPDF } = await import('jspdf');
-  const first = pages[0];
+  const dims = (p?: Page) => pageDisplay(p?.rotation ?? 0, PAGE_W, p?.h || 1123);
+  const d0 = dims(pages[0]);
   const pdf = new jsPDF({
     unit: 'px',
-    format: [PAGE_W, first?.h || 1123],
+    format: [d0.dW, d0.dH],
     compress: true,
   });
   imgs.forEach((src, i) => {
-    const ph = pages[i]?.h || 1123;
-    if (i > 0) pdf.addPage([PAGE_W, ph]);
-    pdf.addImage(src, 'JPEG', 0, 0, PAGE_W, ph);
+    const d = dims(pages[i]);
+    if (i > 0) pdf.addPage([d.dW, d.dH]);
+    pdf.addImage(src, 'JPEG', 0, 0, d.dW, d.dH);
   });
   return pdf;
 }
