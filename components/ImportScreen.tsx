@@ -8,9 +8,9 @@ import s from './ImportScreen.module.css';
 
 export default function ImportScreen() {
   const loadResult = useEditor((st) => st.loadResult);
-  const useDemo = useEditor((st) => st.useDemo);
   const [over, setOver] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [logoOk, setLogoOk] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFiles(list: FileList | null) {
@@ -35,8 +35,28 @@ export default function ImportScreen() {
 
   return (
     <div className={s.screen}>
+      {/* Marque brimborion (galaxie d'apps) */}
+      <div className={s.hero}>
+        {logoOk ? (
+          // eslint-disable-next-line @next/next/no-img-element -- logo de marque, /public/logo.svg
+          <img
+            className={s.logo}
+            src="/logo.svg"
+            alt="logo brimborion"
+            onError={() => setLogoOk(false)}
+          />
+        ) : null}
+        <div className={s.brandWrap}>
+          <h1 className={`${s.brand} ${s.ghost}`} aria-hidden="true">
+            brimborion
+          </h1>
+          <h1 className={s.brand}>brimborion</h1>
+        </div>
+        <span className={s.tagline}>petit atelier numérique</span>
+      </div>
+
       <div className={s.header}>
-        <div className={s.logo}>
+        <div className={s.logoBadge}>
           <i className="fas fa-file-pen" aria-hidden="true" />
         </div>
         <div>
@@ -65,14 +85,11 @@ export default function ImportScreen() {
         </div>
         <div className={s.actions}>
           <Button
-            variant="white"
+            variant="primary"
             icon="fas fa-folder-open"
             onClick={() => inputRef.current?.click()}
           >
             Parcourir
-          </Button>
-          <Button variant="primary" icon="fas fa-file-lines" onClick={useDemo}>
-            Ouvrir un exemple
           </Button>
         </div>
         {busy ? (

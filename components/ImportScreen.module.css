@@ -7,13 +7,73 @@
   padding: 40px;
   background: linear-gradient(180deg, #f3f5f7, #e6ebef);
 }
+
+/* ---- Marque brimborion (galaxie d'apps) ---- */
+.hero {
+  /* palette de marque, isolée du design system Publidata */
+  --cocoa: #3b2a20;
+  --cream: #efe6c7;
+  --plum: #9c7be3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 26px;
+}
+.logo {
+  width: 96px;
+  height: 96px;
+  display: block;
+  margin-bottom: 14px;
+  filter: drop-shadow(4px 5px 0 var(--cocoa));
+}
+.brandWrap {
+  position: relative;
+  display: inline-block;
+}
+.brand {
+  font-family: 'Kalam', cursive;
+  font-weight: 700;
+  font-size: clamp(2.6rem, 9vw, 4.4rem);
+  margin: 0;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: var(--cream);
+  -webkit-text-stroke: 2.5px var(--cocoa);
+  text-stroke: 2.5px var(--cocoa);
+  position: relative;
+  z-index: 2;
+}
+/* dédoublement décalé « impression ratée » derrière le titre */
+.brand.ghost {
+  position: absolute;
+  top: 7px;
+  left: 9px;
+  z-index: 1;
+  color: var(--plum);
+  -webkit-text-stroke: 0;
+  text-stroke: 0;
+}
+.tagline {
+  display: inline-block;
+  margin-top: 22px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: var(--cocoa);
+  color: var(--cream);
+  padding: 8px 18px;
+  border-radius: 999px;
+}
+
+/* ---- En-tête de l'app ---- */
 .header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
 }
-.logo {
+.logoBadge {
   width: 44px;
   height: 44px;
   border-radius: 8px;
@@ -23,7 +83,7 @@
   justify-content: center;
   box-shadow: 0 0 20px 0 rgba(0, 117, 241, 0.3);
 }
-.logo i {
+.logoBadge i {
   color: #fff;
   font-size: 20px;
 }

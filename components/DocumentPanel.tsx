@@ -6,7 +6,6 @@ import { loadPdf } from '@/lib/pdf';
 import { ACCENT, rgba } from '@/lib/tokens';
 import { Row, Input, SectionLabel } from './ui/Field';
 import ActionButton from './ui/ActionButton';
-import { DEMO_FIELDS } from './DemoDocument';
 import s from './Panel.module.css';
 
 export default function DocumentPanel() {
@@ -31,25 +30,11 @@ export default function DocumentPanel() {
       setMerging(false);
     }
   }
-  const {
-    docName,
-    pages,
-    activePage,
-    elements,
-    fieldValues,
-    dragPage,
-    dragOverPage,
-  } = st;
+  const { docName, pages, activePage, elements, dragPage, dragOverPage } = st;
   const multi = pages.length > 1;
 
   const thumbIcon = (kind: string) =>
-    kind === 'image' ? 'far fa-file-image' : kind === 'demo' ? 'far fa-file-lines' : 'far fa-file';
-
-  const hasDemo = pages.some((p) => p.kind === 'demo');
-  const filled = DEMO_FIELDS.filter(([k]) => {
-    const v = fieldValues[k];
-    return typeof v === 'string' && v.trim();
-  }).length;
+    kind === 'image' ? 'far fa-file-image' : 'far fa-file';
 
   const ptextCount = elements.filter((e) => e.type === 'ptext').length;
   const ptextModif = elements.filter((e) => e.type === 'ptext' && e.text !== e.orig).length;
@@ -189,34 +174,6 @@ export default function DocumentPanel() {
           }}
         />
       </div>
-
-      {hasDemo ? (
-        <>
-          <div className={s.fieldHead}>
-            <span>Champs détectés</span>
-            <span style={{ color: filled === DEMO_FIELDS.length ? 'var(--pd-success)' : ACCENT }}>
-              {filled}/{DEMO_FIELDS.length}
-            </span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {DEMO_FIELDS.map(([k, l]) => {
-              const raw = fieldValues[k];
-              const on = typeof raw === 'string' && raw.trim();
-              return (
-                <div key={k} className={s.fieldRow}>
-                  <i
-                    className={on ? 'fas fa-circle-check' : 'far fa-circle'}
-                    style={{ color: on ? 'var(--pd-success)' : 'var(--pd-border)', fontSize: 14 }}
-                    aria-hidden="true"
-                  />
-                  <span style={{ flex: 1 }}>{l}</span>
-                  {on ? <span className={s.fieldVal}>{raw as string}</span> : null}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      ) : null}
 
       {ptextCount ? (
         <div className={s.ptextCard}>

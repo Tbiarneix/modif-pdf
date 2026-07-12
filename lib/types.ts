@@ -27,7 +27,7 @@ export type Align = 'left' | 'center' | 'right';
 
 export interface Page {
   id: string;
-  kind: 'demo' | 'image' | 'blank';
+  kind: 'image' | 'blank';
   src?: string;
   /** hauteur de page en px (espace non zoomé) */
   h: number;

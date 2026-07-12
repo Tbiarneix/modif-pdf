@@ -111,7 +111,6 @@ export interface EditorState {
 
   loadResult: (r: LoadResult) => void;
   appendResult: (r: LoadResult) => void;
-  useDemo: () => void;
   reset: () => void;
 }
 
@@ -121,8 +120,8 @@ function historyFlags() {
 
 export const useEditor = create<EditorState>((set, get) => ({
   screen: 'import',
-  docName: 'Attestation_de_domicile.pdf',
-  pages: [{ id: 'p1', kind: 'demo', h: PAGE_H }],
+  docName: 'Document.pdf',
+  pages: [{ id: 'p1', kind: 'blank', h: PAGE_H }],
   activePage: 0,
   zoom: 0.82,
   tool: 'select',
@@ -428,22 +427,6 @@ export const useEditor = create<EditorState>((set, get) => ({
         editingId: null,
         ...historyFlags(),
       };
-    });
-  },
-  useDemo: () => {
-    past.length = 0;
-    future.length = 0;
-    set({
-      screen: 'editor',
-      pages: [{ id: 'p1', kind: 'demo', h: PAGE_H }],
-      activePage: 0,
-      docName: 'Attestation_de_domicile.pdf',
-      elements: [],
-      fieldValues: {},
-      selectedId: null,
-      editingId: null,
-      tool: 'select',
-      ...historyFlags(),
     });
   },
   reset: () => {

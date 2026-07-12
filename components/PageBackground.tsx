@@ -2,9 +2,8 @@
 
 import type { Draft, Page } from '@/lib/types';
 import { ACCENT } from '@/lib/tokens';
-import DemoDocument from './DemoDocument';
 
-/** Fond d'une page selon son type (raster/image, démo HTML, ou blanc). */
+/** Fond d'une page selon son type (raster/image, ou blanc). */
 export function PageBackground({ page }: { page: Page }) {
   if (page.kind === 'image') {
     return (
@@ -25,7 +24,6 @@ export function PageBackground({ page }: { page: Page }) {
       />
     );
   }
-  if (page.kind === 'demo') return <DemoDocument />;
   return null; // blank
 }
 

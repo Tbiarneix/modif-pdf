@@ -12,7 +12,6 @@ import s from './ExportScreen.module.css';
 export default function ExportScreen() {
   const pages = useEditor((st) => st.pages);
   const elements = useEditor((st) => st.elements);
-  const fieldValues = useEditor((st) => st.fieldValues);
   const docName = useEditor((st) => st.docName);
   const exporting = useEditor((st) => st.exporting);
   const exportPages = useEditor((st) => st.exportPages);
@@ -47,7 +46,7 @@ export default function ExportScreen() {
     {
       i: 'fa-pen',
       l: 'Champs remplis',
-      v: Object.values(fieldValues).filter((v) => v && String(v).trim()).length,
+      v: elements.filter((e) => e.type === 'field' && e.text.trim()).length,
     },
     {
       i: 'fa-i-cursor',

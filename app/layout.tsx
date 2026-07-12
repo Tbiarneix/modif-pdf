@@ -19,12 +19,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         />
-        {/* Police manuscrite pour les signatures « Saisir » (chargée en CDN,
-            comme le kit FA ; à remplacer par next/font ou le DS Publidata en prod). */}
+        {/* Dancing Script : signatures « Saisir ». Kalam : titre de marque
+            brimborion sur l'écran d'accueil. (CDN, comme le kit FA.) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Kalam:wght@700&display=swap"
           rel="stylesheet"
         />
       </head>
