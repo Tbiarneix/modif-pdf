@@ -10,6 +10,17 @@
   z-index: 20;
   position: relative;
 }
+.logoBrimborion {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  cursor: pointer;
+}
 .logo {
   width: 30px;
   height: 30px;

@@ -5,6 +5,7 @@ import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 import Tag from './ui/Tag';
 import s from './Topbar.module.css';
+import Link from 'next/link';
 
 export default function Topbar() {
   const docName = useEditor((st) => st.docName);
@@ -25,6 +26,13 @@ export default function Topbar() {
 
   return (
     <div className={s.bar}>
+      <button className={s.logoBrimborion} onClick={() => window.open('https://pdf.brimborion.com')}>
+        <img
+          className={s.logoBrimborion}
+          src="/logo.svg"
+          alt="Retour à l'écran d'accueil"
+          />
+      </button>
       <div className={s.logo}>
         <i className="fas fa-file-pen" aria-hidden="true" />
       </div>
