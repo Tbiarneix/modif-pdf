@@ -26,7 +26,7 @@ export default function Topbar() {
 
   return (
     <div className={s.bar}>
-      <button className={s.logoBrimborion} onClick={() => window.open('https://pdf.brimborion.com')}>
+      <button className={s.logoBrimborion} onClick={() => window.open('https://pdf.brimborion.app', '_self')} title="Retour à l'écran d'accueil">
         <img
           className={s.logoBrimborion}
           src="/logo.svg"
